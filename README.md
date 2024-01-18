@@ -5,4 +5,4 @@
 - Xác định máy đã cài đặt Java chưa.
 - Tải Elasticsearch theo link sau: https://www.elastic.co/downloads/elasticsearch
 - Cài đặt Kibana (optional)
-- Thực hiện chạy tren port 9600
+- Thực hiện chạy tren port 9200
