@@ -1,3 +1,4 @@
+# Corpdoc OCR Service
 1/ OCR
 - Cài đặt Tesseract theo link sau: https://github.com/UB-Mannheim/tesseract/wiki . Chọn phiên bản mong muốn. Lưu ý cài đặt thư viện tiếng Việt thì Tesseract mới có thể chạy được.
 
