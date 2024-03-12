@@ -5,25 +5,64 @@ import cv2
 import os
 import regex as re
 import numpy as np
-from urllib.request import Request, urlopen
+import boto3
+from dotenv import load_dotenv
+import platform
+from tempfile import TemporaryDirectory
+from pathlib import Path
+from pdf2image import convert_from_path
 
 app = FastAPI()
 
-@app.get("/")
-def index():
-    # Đọc ảnh từ  URL
-    url = "https://accgroup.vn/wp-content/uploads/2022/09/phong-cach-ngon-ngu-hanh-chinh-la-gi.jpg"
-    request_site = Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    webpage = urlopen(request_site).read()
-    img_array = np.array(bytearray(webpage), dtype=np.uint8)
-    img = cv2.imdecode(img_array, -1)
+# Load variables from .env file
+load_dotenv()
+s3_region = os.environ.get("STORAGE_AWS_REGION")
+s3_access_key_id = os.environ.get("STORAGE_AWS_ACCESS_KEY_ID")
+s3_secret_access_key = os.environ.get("STORAGE_AWS_SECRET_ACCESS_KEY")
+s3_file_bucket = os.environ.get("S3_FILE_BUCKET_NAME")
+asset_path = os.environ.get("ASSET_PATH")
+poppler_path = os.environ.get("POPPLER_PATH")
 
-    # Convert về grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+if platform.system() == "Windows":
+    # Windows also needs poppler_exe
+    path_to_poppler_exe = Path(poppler_path)
+
+# Path of the Input pdf
+PDF_file = Path(asset_path)
+
+# Store all the pages of the PDF in a variable
+image_file_list = []
+
+
+@app.get("/")
+def index(id: str):
+    # Access S3
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=s3_access_key_id,
+        aws_secret_access_key=s3_secret_access_key,
+        region_name=s3_region,
+    )
+    s3.download_file(s3_file_bucket, id + ".pdf", asset_path)
+
+    # Đọc ảnh từ file PDF
+    with TemporaryDirectory() as tempdir:
+        if platform.system() == "Windows":
+            pdf_pages = convert_from_path(
+                PDF_file, 80, poppler_path=path_to_poppler_exe
+            )
+        else:
+            pdf_pages = convert_from_path(PDF_file, 80)
+        # Read in the PDF file at 500 DPI
+        image = pdf_pages[0]
+        opencvImage = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY)
+        # cv2.imshow("Image", opencvImage)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
     # Lưu ảnh trong ổ cứng như file tạm để có thể apply OCR
     filename = "{}.png".format(os.getpid())
-    cv2.imwrite(filename, gray)  # ghi ảnh gray vào filename
+    cv2.imwrite(filename, opencvImage)  # ghi ảnh vào filename
 
     # Load ảnh và apply nhận dạng bằng Tesseract OCR
     text = pytesseract.image_to_string(
@@ -36,11 +75,6 @@ def index():
 
     # In dòng chữ nhận dạng được
     # print(text)
-
-    # Hiển thị ảnh ban đầu, ảnh đã được pre-processing
-    # cv2.imshow("Image", img)
-    # cv2.imshow("Output", gray)
-    # cv2.waitKey(0)
 
     # Phân tích text
 
@@ -172,13 +206,13 @@ def index():
 
     test = {}
 
-    maxHeight = gray.shape[0]
-    maxWidth = gray.shape[1]
+    maxHeight = opencvImage.shape[0]
+    maxWidth = opencvImage.shape[1]
 
     # co quan
     coquanHeight = int(maxHeight / 10)
     coquanWidth = int(maxWidth / 3 + 10)
-    coQuanImg = gray[0:coquanHeight, 0:coquanWidth]
+    coQuanImg = opencvImage[0:coquanHeight, 0:coquanWidth]
     # cv2.imshow("Region Of Interest", coQuanImg)
     # cv2.waitKey(0)
     coQuan = pytesseract.image_to_string(coQuanImg, lang="vie")
@@ -227,6 +261,7 @@ def index():
         test["ngay_thang"] = subObj[1]
 
         text = text[reg.span()[1] + 1 :]
+
 
     # loai van ban
     reg = re.search(
