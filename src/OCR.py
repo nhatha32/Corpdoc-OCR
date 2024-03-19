@@ -170,7 +170,6 @@ def OCRProcessor(companyId, fileId):
             }
         }
     )
-    print(data_string)
     
     # Send message to Langchain queue
     producer_conn = pika.BlockingConnection(params)
