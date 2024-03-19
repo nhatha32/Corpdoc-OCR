@@ -24,6 +24,7 @@ for i in range(len(bang_nguyen_am)):
 ##########################################################
 ###########
 
+
 def is_valid_vietnam_word(word):
     chars = list(word)
     nguyen_am_index = -1
@@ -37,6 +38,7 @@ def is_valid_vietnam_word(word):
                     return False
                 nguyen_am_index = index
     return True
+
 
 def chuan_hoa_dau_tu_tieng_viet(word):
     if not is_valid_vietnam_word(word):
@@ -99,8 +101,10 @@ def chuan_hoa_dau_tu_tieng_viet(word):
         chars[nguyen_am_index[1]] = bang_nguyen_am[x][dau_cau]
     return "".join(chars)
 
+
 ###############################################################
 #################
+
 
 def chuan_hoa_dau_cau_tieng_viet(sentence):
     sentence = sentence.lower()

@@ -1,18 +1,11 @@
 ###################### LIBRARY ######################################
 
-from tempfile import TemporaryDirectory
-from PIL import Image
-import pytesseract
-import cv2
 import os
 import platform
-from pdf2image import convert_from_path
 from fastapi import FastAPI
 import regex as re
-import numpy as np
 import boto3
 from dotenv import load_dotenv
-import platform
 from pathlib import Path
 from PyPDF2 import PdfReader
 import requests
@@ -21,13 +14,13 @@ import requests
 ##################################################################
 
 
-####################### FUNCTION     #############################
+#######################   FUNCTION   #############################
 
-from chuanHoa import chuan_hoa_dau_cau_tieng_viet
-from adminDoc import postAdminDoc
-from book import postBook
-from checkInfo import checkFullInfo
-from readImg import readImg
+from src.chuanHoa import chuan_hoa_dau_cau_tieng_viet
+from src.adminDoc import postAdminDoc
+from src.book import postBook
+from src.checkInfo import checkFullInfo
+from src.readImg import readImg
 
 ##################################################################
 ##################################################################
@@ -71,7 +64,6 @@ def index(id: str):
     # Path of the Input pdf
     PDF_file = Path(inputPath)
 
-
     #################################################
     ##### CHECKTYPE #################################
 
@@ -79,31 +71,34 @@ def index(id: str):
     checkText = False
     textFromOCR = ""
     textPDF = ""
-    test={"body": ""}
-    typeDoc=""
+    test = {"body": ""}
+    typeDoc = ""
 
     textPDF = reader.pages[0].extract_text()
-    if len(textPDF)>10:
+    if len(textPDF) > 10:
         test["body"] = textPDF
         temp = chuan_hoa_dau_cau_tieng_viet(textPDF)
         if re.search("cộng hòa xã hội chủ nghĩa việt nam", temp):
-            typeDoc="admin-doc"
+            typeDoc = "admin-doc"
         else:
-            typeDoc="book"
+            typeDoc = "book"
     else:
         test["body"] = readImg(0, id)
         temp = chuan_hoa_dau_cau_tieng_viet(test["body"])
-        temp1 = re.search("cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam", temp)
+        temp1 = re.search(
+            "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam",
+            temp,
+        )
         if temp1:
-            typeDoc="admin-doc"
+            typeDoc = "admin-doc"
         else:
-            typeDoc="book"
+            typeDoc = "book"
 
     if typeDoc == "book":
-        if  reader.pages[1].extract_text():
+        if reader.pages[1].extract_text():
             for i, page in enumerate(reader.pages):
                 textBook = page.extract_text()
-                if len(textBook)>700:
+                if len(textBook) > 700:
                     temp = postBook(textBook)
                     if temp is not None:
                         test.update(temp)
@@ -114,7 +109,7 @@ def index(id: str):
             test["body"] = readImg(2, id)
     else:
         temp = reader.pages[0].extract_text()
-        if len(temp)>10:
+        if len(temp) > 10:
             textAdmin = temp
         else:
             textAdmin = readImg(0, id)
@@ -128,8 +123,8 @@ def index(id: str):
 
     # print(text)
 
-    s=""
-    
+    s = ""
+
     if typeDoc == "book":
         if "isbn" in test:
             response = requests.get(gg_api + "q=isbn:" + test["isbn"])
@@ -141,7 +136,9 @@ def index(id: str):
                 else:
                     s = test["body"]
         if "title" in test and "author" in test:
-            response = requests.get(gg_api + "q=intitle:" + test["title"] + "&inauthor:" + test["author"])
+            response = requests.get(
+                gg_api + "q=intitle:" + test["title"] + "&inauthor:" + test["author"]
+            )
             resData = response.json()
             if resData["totalItems"] > 0:
                 item = resData["items"][0]["volumeInfo"]
@@ -156,8 +153,8 @@ def index(id: str):
         if "tieu_de" in test:
             s = test["tieu_de"]
 
-    response = requests.get(langchain_api + "type="+ typeDoc +"&title="+s)
+    response = requests.get(langchain_api + "type=" + typeDoc + "&title=" + s)
 
     os.remove(PDF_file)
-    
+
     return {"dataLang": response.json(), "dataOcr": test}
