@@ -23,10 +23,6 @@ amqp_url = (
 )
 params = pika.URLParameters(amqp_url)
 
-# Producer connection
-producer_conn = pika.BlockingConnection(params)
-producer_channel = producer_conn.channel()
-
 # Consumer connection
 consumer_conn = pika.BlockingConnection(params)
 consumer_channel = consumer_conn.channel()

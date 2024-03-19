@@ -20,7 +20,7 @@ from chuanHoa import chuan_hoa_dau_cau_tieng_viet
 from adminDoc import postAdminDoc
 from book import postBook
 from readImg import readImg
-from rabbitMQ import producer_channel
+from rabbitMQ import params
 
 ##################################################################
 ##################################################################
@@ -136,7 +136,11 @@ def OCRProcessor(companyId, fileId):
                     langchainInput = ocrVal["body"]
         if "title" in ocrVal and "author" in ocrVal:
             response = requests.get(
-                gg_api + "q=intitle:" + ocrVal["title"] + "&inauthor:" + ocrVal["author"]
+                gg_api
+                + "q=intitle:"
+                + ocrVal["title"]
+                + "&inauthor:"
+                + ocrVal["author"]
             )
             resData = response.json()
             if resData["totalItems"] > 0:
@@ -167,6 +171,8 @@ def OCRProcessor(companyId, fileId):
     )
     
     # Send message to Langchain queue
+    producer_conn = pika.BlockingConnection(params)
+    producer_channel = producer_conn.channel()
     producer_channel.queue_declare(queue=amqp_langchain_queue, durable=True)
     producer_channel.basic_qos(prefetch_count=10)
     producer_channel.basic_publish(
@@ -175,3 +181,4 @@ def OCRProcessor(companyId, fileId):
         body=data_string,
         properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent),
     )
+    producer_conn.close()
