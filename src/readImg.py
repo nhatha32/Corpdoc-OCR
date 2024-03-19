@@ -40,10 +40,10 @@ def readImg(i, inputPath):
     with TemporaryDirectory() as tempdir:
         if platform.system() == "Windows":
             pdf_pages = convert_from_path(
-                PDF_file, 80, poppler_path=path_to_poppler_exe
+                PDF_file, 100, poppler_path=path_to_poppler_exe
             )
         else:
-            pdf_pages = convert_from_path(PDF_file, 80)
+            pdf_pages = convert_from_path(PDF_file, 100)
 
     image = pdf_pages[i]
     opencvImage = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY)
