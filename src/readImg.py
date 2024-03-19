@@ -11,14 +11,8 @@ from pathlib import Path
 
 # Load variables from .env file
 load_dotenv()
-s3_region = os.environ.get("STORAGE_AWS_REGION")
-s3_access_key_id = os.environ.get("STORAGE_AWS_ACCESS_KEY_ID")
-s3_secret_access_key = os.environ.get("STORAGE_AWS_SECRET_ACCESS_KEY")
-s3_file_bucket = os.environ.get("S3_FILE_BUCKET_NAME")
 asset_path = os.environ.get("ASSET_PATH")
 poppler_path = os.environ.get("POPPLER_PATH")
-gg_api = os.environ.get("GOOGLE_API")
-langchain_api = os.environ.get("LANGCHAIN_API")
 
 if platform.system() == "Windows":
     # Windows also needs poppler_exe
