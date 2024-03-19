@@ -21,7 +21,7 @@ def postAdminDoc(raw_text):
         raw_text,
     )
 
-    reg = re.search("\n(Căn cứ|Kính gửi|Tại)", raw_text)
+    reg = re.search("(Căn cứ|Kính gửi|Tại)", raw_text)
 
     if regType and reg:
         ocrValInPage["tieu_de"] = raw_text[regType.span()[0] : reg.span()[0]]

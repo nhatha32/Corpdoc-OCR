@@ -87,7 +87,7 @@ def OCRProcessor(companyId, userId, fileId):
         ocrVal["body"] = readImg(0, inputPath)
         checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
         checkAdminDoc = re.search(
-            "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam",
+            "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam|cọng hòa xã họi chủ nghĩa việt nam|cộng hòa xã họi chủ nghĩa việt nam",
             checkType,
         )
         if checkAdminDoc:
@@ -114,6 +114,7 @@ def OCRProcessor(companyId, userId, fileId):
             textAdmin = textExtract
         else:
             textAdmin = readImg(0, inputPath)
+        print(textAdmin)
         if textAdmin:
             valInPage = postAdminDoc(textAdmin)
             if valInPage is not None:
