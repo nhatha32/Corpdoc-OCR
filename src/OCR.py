@@ -52,7 +52,7 @@ PDF_file = Path(asset_path)
 image_file_list = []
 
 
-def OCRProcessor(companyId, fileId):
+def OCRProcessor(companyId, userId, fileId):
     inputPath = asset_path + fileId + ".pdf"
     # Access S3
     s3 = boto3.client(
@@ -161,15 +161,16 @@ def OCRProcessor(companyId, fileId):
     data_string = json.dumps(
         {
             "data": {
-                "fileId": fileId,
                 "companyId": companyId,
+                "userId": userId,
+                "fileId": fileId,
                 "type": typeDoc,
                 "title": langchainInput,
                 "ocr": ocrVal,
             }
         }
     )
-    
+
     # Send message to Langchain queue
     producer_conn = pika.BlockingConnection(params)
     producer_channel = producer_conn.channel()
