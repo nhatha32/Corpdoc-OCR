@@ -3,17 +3,11 @@ from PIL import Image
 import pytesseract
 import cv2
 import os
-import platform
 from pdf2image import convert_from_path
-from fastapi import FastAPI
-import regex as re
 import numpy as np
-import boto3
 from dotenv import load_dotenv
 import platform
 from pathlib import Path
-from PyPDF2 import PdfReader
-import requests
 
 # Load variables from .env file
 load_dotenv()
@@ -35,6 +29,7 @@ PDF_file = Path(asset_path)
 
 # Store all the pages of the PDF in a variable
 image_file_list = []
+
 
 # Đọc ảnh từ file PDF
 def readImg(i, id):
