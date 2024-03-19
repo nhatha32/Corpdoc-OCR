@@ -122,9 +122,7 @@ def OCRProcessor(companyId, fileId):
                 test.update(temp)
                 test["body"] = textAdmin
 
-    # Phân tích text
-
-    # print(text)
+    # Text Analysis
 
     s = ""
 

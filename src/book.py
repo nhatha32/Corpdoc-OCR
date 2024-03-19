@@ -5,20 +5,6 @@ import regex as re
 ##################################################################
 ##################################################################
 
-lowerCharSet = (
-    "[a-záàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệóòỏõọôốồổỗộơớờởỡợíìỉĩịúùủũụưứừửữựýỳỷỹỵđ]"
-)
-upperCharSet = (
-    "[A-ZÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÍÌỈĨỊÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸỴĐ]"
-)
-
-
-def splitText(text, startInit, endInit, objname, ocrValInPage):
-    objval = text[startInit:endInit]
-    ocrValInPage[objname] = objval
-    return text[endInit + 1 :]
-
-
 def postBook(raw_text):
     ocrValInPage = {}
     ocrValInPage["body"] = raw_text[0:700]
