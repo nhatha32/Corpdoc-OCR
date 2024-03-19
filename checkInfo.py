@@ -4,6 +4,6 @@ def checkFullInfo(test, type):
             if "isbn" in test or ("title" in test and "author" in test):
                 return True
         else:
-            if "tieu_de" in test and "so" in test and "loai_van_ban" in test:
+            if "tieu_de" in test:
                 return True
     return False

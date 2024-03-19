@@ -1,22 +1,36 @@
-from fastapi import FastAPI
+###################### LIBRARY ######################################
+
+from tempfile import TemporaryDirectory
 from PIL import Image
 import pytesseract
 import cv2
 import os
+import platform
+from pdf2image import convert_from_path
+from fastapi import FastAPI
 import regex as re
 import numpy as np
 import boto3
 from dotenv import load_dotenv
 import platform
-from tempfile import TemporaryDirectory
 from pathlib import Path
-from pdf2image import convert_from_path
 from PyPDF2 import PdfReader
+import requests
+
+##################################################################
+##################################################################
+
+
+####################### FUNCTION     #############################
+
 from chuanHoa import chuan_hoa_dau_cau_tieng_viet
 from adminDoc import postAdminDoc
 from book import postBook
 from checkInfo import checkFullInfo
-import requests
+from readImg import readImg
+
+##################################################################
+##################################################################
 
 app = FastAPI()
 
@@ -28,6 +42,8 @@ s3_secret_access_key = os.environ.get("STORAGE_AWS_SECRET_ACCESS_KEY")
 s3_file_bucket = os.environ.get("S3_FILE_BUCKET_NAME")
 asset_path = os.environ.get("ASSET_PATH")
 poppler_path = os.environ.get("POPPLER_PATH")
+gg_api = os.environ.get("GOOGLE_API")
+langchain_api = os.environ.get("LANGCHAIN_API")
 
 if platform.system() == "Windows":
     # Windows also needs poppler_exe
@@ -41,7 +57,7 @@ image_file_list = []
 
 
 @app.get("/")
-def index(id: str, type: str):
+def index(id: str):
     # Access S3
     s3 = boto3.client(
         "s3",
@@ -49,119 +65,98 @@ def index(id: str, type: str):
         aws_secret_access_key=s3_secret_access_key,
         region_name=s3_region,
     )
-    s3.download_file(s3_file_bucket, id + ".pdf", asset_path)
+    s3.download_file(s3_file_bucket, id + ".pdf", asset_path + id + ".pdf")
+
+    # Path of the Input pdf
+    PDF_file = Path(asset_path + id + ".pdf")
+
+
+    #################################################
+    ##### CHECKTYPE #################################
 
     reader = PdfReader(PDF_file)
     checkText = False
     textFromOCR = ""
     textPDF = ""
-    test = {}
+    test={"body": ""}
+    typeDoc=""
 
-    for i, page in enumerate(reader.pages):
-        raw_text = page.extract_text()
-        if raw_text:
-            checkText = True
-            break
-
-    if checkText == False:
-        # Đọc ảnh từ file PDF
-        with TemporaryDirectory() as tempdir:
-            if platform.system() == "Windows":
-                pdf_pages = convert_from_path(
-                    PDF_file, 80, poppler_path=path_to_poppler_exe
-                )
-            else:
-                pdf_pages = convert_from_path(PDF_file, 80)
-
-        # Read in the PDF file at 500 DPI
-        for i, page in enumerate(reader.pages):
-            image = pdf_pages[i]
-            opencvImage = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY)
-            # cv2.imshow("Image", opencvImage)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-
-            # Lưu ảnh trong ổ cứng như file tạm để có thể apply OCR
-            filename = "{}.png".format(os.getpid())
-            cv2.imwrite(filename, opencvImage)  # ghi ảnh vào filename
-
-            # Load ảnh và apply nhận dạng bằng Tesseract OCR
-            textFromOCR = pytesseract.image_to_string(
-                Image.open(filename), lang="vie"
-            )  # có nhiều ngôn ngữ thì trong lang các ngôn ngữ cách nhau bằng dấu  +
-            # """ Cần chú ý các chế độ nhận diện được điều chỉnh bằng config """
-
-            # Thực hiện chuyển đổi xong thì xóa ảnh tạm
-            os.remove(filename)
-
-            # In dòng chữ nhận dạng được
-            if type == "book":
-                temp = postBook(textFromOCR)
-            else: 
-                temp = postAdminDoc(textFromOCR)
-            if temp is not None and test is not None:
-                test = test.update(temp)
-            elif test is None:
-                test = temp
-            if checkFullInfo(test, type):
-                break
-
+    textPDF = reader.pages[0].extract_text()
+    if len(textPDF)>10:
+        test["body"] = textPDF
+        temp = chuan_hoa_dau_cau_tieng_viet(textPDF)
+        if re.search("cộng hòa xã hội chủ nghĩa việt nam", temp):
+            typeDoc="admin-doc"
+        else:
+            typeDoc="book"
     else:
-        for i, page in enumerate(reader.pages):
-            textPDF = page.extract_text()
-            if textPDF:
-                if type == "book":
-                    temp = postBook(textPDF)
-                else: 
-                    temp = postAdminDoc(textPDF)
-                if temp is not None and test is not None:
-                    test = test.update(temp)
-                elif test is None:
-                    test = temp
-                if checkFullInfo(test, type):
-                    break
+        test["body"] = readImg(0, id)
+        temp = chuan_hoa_dau_cau_tieng_viet(test["body"])
+        temp1 = re.search("cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam", temp)
+        if temp1:
+            typeDoc="admin-doc"
+        else:
+            typeDoc="book"
 
+    if typeDoc == "book":
+        if  reader.pages[1].extract_text():
+            for i, page in enumerate(reader.pages):
+                textBook = page.extract_text()
+                if len(textBook)>700:
+                    temp = postBook(textBook)
+                    if temp is not None:
+                        test.update(temp)
+                        break
+                    if i == 2:
+                        test["body"] = textBook
+        else:
+            test["body"] = readImg(2, id)
+    else:
+        temp = reader.pages[0].extract_text()
+        if len(temp)>10:
+            textAdmin = temp
+        else:
+            textAdmin = readImg(0, id)
+        if textAdmin:
+            temp = postAdminDoc(textAdmin)
+            if temp is not None:
+                test.update(temp)
+                test["body"] = textAdmin
 
     # Phân tích text
 
-    # text = chuan_hoa_dau_cau_tieng_viet(textFromOCR)
-
-    # print(text)
-
-    # # print(test)
     # print(text)
 
     s=""
-    print(s)
     
-    if type == "book":
-        if test is not None and "isbn" in test:
-            response = requests.get("https://www.googleapis.com/books/v1/volumes?q=isbn:" + test["isbn"])
+    if typeDoc == "book":
+        if "isbn" in test:
+            response = requests.get(gg_api + "q=isbn:" + test["isbn"])
             resData = response.json()
             if resData["totalItems"] > 0:
                 item = resData["items"][0]["volumeInfo"]
                 if "description" in item:
                     s = item["description"]
-                if "subtitle" in item:
-                    s = item["subtitle"]
                 else:
-                    s = item["title"]
-        if test is not None and "title" in test and "author" in test:
-            response = requests.get("https://www.googleapis.com/books/v1/volumes?q=intitle:" + test["title"] + "&inauthor:" + test["author"])
+                    s = test["body"]
+        if "title" in test and "author" in test:
+            response = requests.get(gg_api + "q=intitle:" + test["title"] + "&inauthor:" + test["author"])
             resData = response.json()
             if resData["totalItems"] > 0:
                 item = resData["items"][0]["volumeInfo"]
-                print(item)
-
-                if item["title"].upper() == test["title"].upper() and item["authors"]:
+                if item["title"].upper() == test["title"].upper():
                     if "description" in item:
                         s = item["description"]
-        elif test is not None and "body" in test:
-            s = test["body"]
+                    else:
+                        s = test["body"]
+            else:
+                s = test["body"]
     else:
         if "tieu_de" in test:
             s = test["tieu_de"]
 
-    response = requests.get("https://langchain-server-6xga72vola-as.a.run.app/?type="+ type +"&title="+s)
+    response = requests.get(langchain_api + "type="+ typeDoc +"&title="+s)
+
+    os.remove(PDF_file)
     
     return {"dataLang": response.json(), "dataOcr": test}
