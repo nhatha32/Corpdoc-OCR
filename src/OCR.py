@@ -19,7 +19,6 @@ import json
 from chuanHoa import chuan_hoa_dau_cau_tieng_viet
 from adminDoc import postAdminDoc
 from book import postBook
-from checkInfo import checkFullInfo
 from readImg import readImg
 from rabbitMQ import producer_channel
 
