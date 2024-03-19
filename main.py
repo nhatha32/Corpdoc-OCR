@@ -51,7 +51,7 @@ image_file_list = []
 
 @app.get("/")
 def index(id: str):
-    inputPath = inputPath
+    inputPath = asset_path + id + ".pdf"
     # Access S3
     s3 = boto3.client(
         "s3",
@@ -83,7 +83,7 @@ def index(id: str):
         else:
             typeDoc = "book"
     else:
-        test["body"] = readImg(0, id)
+        test["body"] = readImg(0, inputPath)
         temp = chuan_hoa_dau_cau_tieng_viet(test["body"])
         temp1 = re.search(
             "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam",
@@ -106,13 +106,13 @@ def index(id: str):
                     if i == 2:
                         test["body"] = textBook
         else:
-            test["body"] = readImg(2, id)
+            test["body"] = readImg(2, inputPath)
     else:
         temp = reader.pages[0].extract_text()
         if len(temp) > 10:
             textAdmin = temp
         else:
-            textAdmin = readImg(0, id)
+            textAdmin = readImg(0, inputPath)
         if textAdmin:
             temp = postAdminDoc(textAdmin)
             if temp is not None:

@@ -32,8 +32,8 @@ image_file_list = []
 
 
 # Đọc ảnh từ file PDF
-def readImg(i, id):
-    PDF_file = Path(asset_path + id + ".pdf")
+def readImg(i, inputPath):
+    PDF_file = Path(inputPath)
     with TemporaryDirectory() as tempdir:
         if platform.system() == "Windows":
             pdf_pages = convert_from_path(
