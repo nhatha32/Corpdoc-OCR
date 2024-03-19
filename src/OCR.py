@@ -53,8 +53,8 @@ PDF_file = Path(asset_path)
 image_file_list = []
 
 
-def OCRProcessor(id):
-    inputPath = asset_path + id + ".pdf"
+def OCRProcessor(companyId, fileId):
+    inputPath = asset_path + fileId + ".pdf"
     # Access S3
     s3 = boto3.client(
         "s3",
@@ -62,7 +62,7 @@ def OCRProcessor(id):
         aws_secret_access_key=s3_secret_access_key,
         region_name=s3_region,
     )
-    s3.download_file(s3_file_bucket, id + ".pdf", inputPath)
+    s3.download_file(s3_file_bucket, fileId + ".pdf", inputPath)
 
     # Path of the Input pdf
     PDF_file = Path(inputPath)
@@ -159,7 +159,15 @@ def OCRProcessor(id):
     os.remove(PDF_file)
 
     data_string = json.dumps(
-        {"data": {"fileId": id, "type": typeDoc, "title": s, "ocr": test}}
+        {
+            "data": {
+                "fileId": fileId,
+                "companyId": companyId,
+                "type": typeDoc,
+                "title": s,
+                "ocr": test,
+            }
+        }
     )
     
     # Send message to Langchain queue

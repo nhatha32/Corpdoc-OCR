@@ -17,8 +17,9 @@ consumer_channel.queue_declare(queue=amqp_ocr_queue, durable=True)
 
 
 def callback(ch, method, properties, body):
-    id = body.decode("utf-8")
-    OCRProcessor(id)
+    data = body.decode("utf-8")
+    ids = data.split("|")
+    OCRProcessor(ids[0], ids[1])
 
 
 consumer_channel.basic_consume(amqp_ocr_queue, callback, auto_ack=True)
