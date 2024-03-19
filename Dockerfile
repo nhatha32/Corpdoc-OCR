@@ -12,4 +12,4 @@ RUN apt-get install poppler-utils -y
 
 RUN pip install -r requirements.txt
 
-CMD uvicorn src.main:app --reload --port=9000 --host=0.0.0.0
+CMD python src/main.py

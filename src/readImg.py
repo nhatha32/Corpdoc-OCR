@@ -1,3 +1,5 @@
+###################### LIBRARY ###################################
+
 from tempfile import TemporaryDirectory
 from PIL import Image
 import pytesseract
@@ -5,14 +7,21 @@ import cv2
 import os
 from pdf2image import convert_from_path
 import numpy as np
-from dotenv import load_dotenv
 import platform
 from pathlib import Path
 
-# Load variables from .env file
-load_dotenv()
-asset_path = os.environ.get("ASSET_PATH")
-poppler_path = os.environ.get("POPPLER_PATH")
+##################################################################
+##################################################################
+
+#######################   VARIABLE   #############################
+
+from envLoader import (
+    asset_path,
+    poppler_path,
+)
+
+##################################################################
+##################################################################
 
 if platform.system() == "Windows":
     # Windows also needs poppler_exe
