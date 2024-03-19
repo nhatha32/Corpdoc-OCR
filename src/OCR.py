@@ -71,28 +71,27 @@ def OCRProcessor(companyId, fileId):
     ##### CHECKTYPE #################################
 
     reader = PdfReader(PDF_file)
-    checkText = False
     textFromOCR = ""
     textPDF = ""
-    test = {"body": ""}
+    ocrVal = {"body": ""}
     typeDoc = ""
 
     textPDF = reader.pages[0].extract_text()
     if len(textPDF) > 10:
-        test["body"] = textPDF
-        temp = chuan_hoa_dau_cau_tieng_viet(textPDF)
-        if re.search("cộng hòa xã hội chủ nghĩa việt nam", temp):
+        ocrVal["body"] = textPDF
+        checkType = chuan_hoa_dau_cau_tieng_viet(textPDF)
+        if re.search("cộng hòa xã hội chủ nghĩa việt nam", checkType):
             typeDoc = "admin-doc"
         else:
             typeDoc = "book"
     else:
-        test["body"] = readImg(0, inputPath)
-        temp = chuan_hoa_dau_cau_tieng_viet(test["body"])
-        temp1 = re.search(
+        ocrVal["body"] = readImg(0, inputPath)
+        checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
+        checkAdminDoc = re.search(
             "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam",
-            temp,
+            checkType,
         )
-        if temp1:
+        if checkAdminDoc:
             typeDoc = "admin-doc"
         else:
             typeDoc = "book"
@@ -102,57 +101,57 @@ def OCRProcessor(companyId, fileId):
             for i, page in enumerate(reader.pages):
                 textBook = page.extract_text()
                 if len(textBook) > 700:
-                    temp = postBook(textBook)
-                    if temp is not None:
-                        test.update(temp)
+                    valInPage = postBook(textBook)
+                    if valInPage is not None:
+                        ocrVal.update(valInPage)
                         break
                     if i == 2:
-                        test["body"] = textBook
+                        ocrVal["body"] = textBook
         else:
-            test["body"] = readImg(2, inputPath)
+            ocrVal["body"] = readImg(2, inputPath)
     else:
-        temp = reader.pages[0].extract_text()
-        if len(temp) > 10:
-            textAdmin = temp
+        textExtract = reader.pages[0].extract_text()
+        if len(textExtract) > 10:
+            textAdmin = textExtract
         else:
             textAdmin = readImg(0, inputPath)
         if textAdmin:
-            temp = postAdminDoc(textAdmin)
-            if temp is not None:
-                test.update(temp)
-                test["body"] = textAdmin
+            valInPage = postAdminDoc(textAdmin)
+            if valInPage is not None:
+                ocrVal.update(valInPage)
+                ocrVal["body"] = textAdmin
 
     # Text Analysis
 
-    s = ""
+    langchainInput = ""
 
     if typeDoc == "book":
-        if "isbn" in test:
-            response = requests.get(gg_api + "q=isbn:" + test["isbn"])
+        if "isbn" in ocrVal:
+            response = requests.get(gg_api + "q=isbn:" + ocrVal["isbn"])
             resData = response.json()
             if resData["totalItems"] > 0:
                 item = resData["items"][0]["volumeInfo"]
                 if "description" in item:
-                    s = item["description"]
+                    langchainInput = item["description"]
                 else:
-                    s = test["body"]
-        if "title" in test and "author" in test:
+                    langchainInput = ocrVal["body"]
+        if "title" in ocrVal and "author" in ocrVal:
             response = requests.get(
-                gg_api + "q=intitle:" + test["title"] + "&inauthor:" + test["author"]
+                gg_api + "q=intitle:" + ocrVal["title"] + "&inauthor:" + ocrVal["author"]
             )
             resData = response.json()
             if resData["totalItems"] > 0:
                 item = resData["items"][0]["volumeInfo"]
-                if item["title"].upper() == test["title"].upper():
+                if item["title"].upper() == ocrVal["title"].upper():
                     if "description" in item:
-                        s = item["description"]
+                        langchainInput = item["description"]
                     else:
-                        s = test["body"]
+                        langchainInput = ocrVal["body"]
             else:
-                s = test["body"]
+                langchainInput = ocrVal["body"]
     else:
-        if "tieu_de" in test:
-            s = test["tieu_de"]
+        if "tieu_de" in ocrVal:
+            langchainInput = ocrVal["tieu_de"]
 
     os.remove(PDF_file)
 
@@ -162,8 +161,8 @@ def OCRProcessor(companyId, fileId):
                 "fileId": fileId,
                 "companyId": companyId,
                 "type": typeDoc,
-                "title": s,
-                "ocr": test,
+                "title": langchainInput,
+                "ocr": ocrVal,
             }
         }
     )
