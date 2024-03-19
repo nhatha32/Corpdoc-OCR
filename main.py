@@ -58,6 +58,7 @@ image_file_list = []
 
 @app.get("/")
 def index(id: str):
+    inputPath = inputPath
     # Access S3
     s3 = boto3.client(
         "s3",
@@ -65,10 +66,10 @@ def index(id: str):
         aws_secret_access_key=s3_secret_access_key,
         region_name=s3_region,
     )
-    s3.download_file(s3_file_bucket, id + ".pdf", asset_path + id + ".pdf")
+    s3.download_file(s3_file_bucket, id + ".pdf", inputPath)
 
     # Path of the Input pdf
-    PDF_file = Path(asset_path + id + ".pdf")
+    PDF_file = Path(inputPath)
 
 
     #################################################
