@@ -79,25 +79,28 @@ def OCRProcessor(companyId, userId, fileId):
     ocrVal = {"body": ""}
     typeDoc = ""
 
-    textPDF = reader.pages[0].extract_text()
-    if len(textPDF) > 10:
-        ocrVal["body"] = textPDF
-        checkType = chuan_hoa_dau_cau_tieng_viet(textPDF)
-        if re.search("cộng hòa xã hội chủ nghĩa việt nam", checkType):
-            typeDoc = "admin-doc"
-        else:
-            typeDoc = "book"
+    if (len(reader.pages) < 4):
+        typeDoc = "admin-doc"
     else:
-        ocrVal["body"] = readImg(0, inputPath)
-        checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
-        checkAdminDoc = re.search(
-            "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam|cọng hòa xã họi chủ nghĩa việt nam|cộng hòa xã họi chủ nghĩa việt nam",
-            checkType,
-        )
-        if checkAdminDoc:
-            typeDoc = "admin-doc"
+        textPDF = reader.pages[0].extract_text()
+        if len(textPDF) > 10:
+            ocrVal["body"] = textPDF
+            checkType = chuan_hoa_dau_cau_tieng_viet(textPDF)
+            if re.search("cộng hòa xã hội chủ nghĩa việt nam", checkType):
+                typeDoc = "admin-doc"
+            else:
+                typeDoc = "book"
         else:
-            typeDoc = "book"
+            ocrVal["body"] = readImg(0, inputPath)
+            checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
+            checkAdminDoc = re.search(
+                "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam|cọng hòa xã họi chủ nghĩa việt nam|cộng hòa xã họi chủ nghĩa việt nam",
+                checkType,
+            )
+            if checkAdminDoc:
+                typeDoc = "admin-doc"
+            else:
+                typeDoc = "book"
 
     if typeDoc == "book":
         if reader.pages[1].extract_text():
