@@ -9,6 +9,7 @@ from PyPDF2 import PdfReader
 import requests
 import pika
 import json
+from datetime import datetime
 
 ##################################################################
 ##################################################################
@@ -53,6 +54,9 @@ image_file_list = []
 
 
 def OCRProcessor(companyId, userId, fileId):
+    # Log request
+    logRequest(companyId, userId, fileId)
+    
     inputPath = asset_path + fileId + ".pdf"
     # Access S3
     s3 = boto3.client(
@@ -183,3 +187,9 @@ def OCRProcessor(companyId, userId, fileId):
         properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent),
     )
     producer_conn.close()
+
+
+def logRequest(companyId, userId, fileId):
+    current_time = datetime.now()
+    current_time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    print(current_time_str + " - " + companyId + " - " + userId + " - " + fileId)
