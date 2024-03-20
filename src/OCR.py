@@ -78,18 +78,23 @@ def OCRProcessor(companyId, userId, fileId):
     textPDF = ""
     ocrVal = {"body": ""}
     typeDoc = ""
-
+    print(1)
     textPDF = reader.pages[0].extract_text()
+    print(2)
     if len(textPDF) > 10:
+        print(3)
         ocrVal["body"] = textPDF
         checkType = chuan_hoa_dau_cau_tieng_viet(textPDF)
+        print(4)
         if re.search("cộng hòa xã hội chủ nghĩa việt nam", checkType):
             typeDoc = "admin-doc"
         else:
             typeDoc = "book"
     else:
+        print(5)
         ocrVal["body"] = readImg(0, inputPath)
         checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
+        print(6)
         checkAdminDoc = re.search(
             "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam",
             checkType,
@@ -98,7 +103,7 @@ def OCRProcessor(companyId, userId, fileId):
             typeDoc = "admin-doc"
         else:
             typeDoc = "book"
-
+    print(7)
     if typeDoc == "book":
         if reader.pages[1].extract_text():
             for i, page in enumerate(reader.pages):
