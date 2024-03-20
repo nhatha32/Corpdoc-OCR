@@ -7,7 +7,7 @@ import regex as re
 
 #######################   FUNCTION   #############################
 
-from chuanHoa import chuan_hoa_dau_cau_tieng_viet
+from src.chuanHoa import chuan_hoa_dau_cau_tieng_viet
 
 ##################################################################
 ##################################################################

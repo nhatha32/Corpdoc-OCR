@@ -16,18 +16,18 @@ import json
 
 #######################   FUNCTION   #############################
 
-from chuanHoa import chuan_hoa_dau_cau_tieng_viet
-from adminDoc import postAdminDoc
-from book import postBook
-from readImg import readImg
-from rabbitMQ import params
+from src.chuanHoa import chuan_hoa_dau_cau_tieng_viet
+from src.adminDoc import postAdminDoc
+from src.book import postBook
+from src.readImg import readImg
+from src.rabbitMQ import params
 
 ##################################################################
 ##################################################################
 
 #######################   VARIABLE   #############################
 
-from envLoader import (
+from src.envLoader import (
     s3_region,
     s3_access_key_id,
     s3_secret_access_key,
