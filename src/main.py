@@ -27,6 +27,7 @@ def start_consumer():
     consumer_channel.start_consuming()
 
 
+__name__ = "src.main"
 if __name__ == "src.main":
     # Start the consumer in a separate thread
     consumer_thread = threading.Thread(target=start_consumer)
