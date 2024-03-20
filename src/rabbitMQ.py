@@ -7,7 +7,7 @@ import pika
 
 #######################   VARIABLE   #############################
 
-from envLoader import (
+from src.envLoader import (
     amqp_protocol,
     amqp_username,
     amqp_password,

@@ -9,6 +9,7 @@ from PyPDF2 import PdfReader
 import requests
 import pika
 import json
+from datetime import datetime
 
 ##################################################################
 ##################################################################
@@ -16,18 +17,18 @@ import json
 
 #######################   FUNCTION   #############################
 
-from chuanHoa import chuan_hoa_dau_cau_tieng_viet
-from adminDoc import postAdminDoc
-from book import postBook
-from readImg import readImg
-from rabbitMQ import params
+from src.chuanHoa import chuan_hoa_dau_cau_tieng_viet
+from src.adminDoc import postAdminDoc
+from src.book import postBook
+from src.readImg import readImg
+from src.rabbitMQ import params
 
 ##################################################################
 ##################################################################
 
 #######################   VARIABLE   #############################
 
-from envLoader import (
+from src.envLoader import (
     s3_region,
     s3_access_key_id,
     s3_secret_access_key,
@@ -53,6 +54,9 @@ image_file_list = []
 
 
 def OCRProcessor(companyId, userId, fileId):
+    # Log request
+    logRequest(companyId, userId, fileId)
+    
     inputPath = asset_path + fileId + ".pdf"
     # Access S3
     s3 = boto3.client(
@@ -75,25 +79,28 @@ def OCRProcessor(companyId, userId, fileId):
     ocrVal = {"body": ""}
     typeDoc = ""
 
-    textPDF = reader.pages[0].extract_text()
-    if len(textPDF) > 10:
-        ocrVal["body"] = textPDF
-        checkType = chuan_hoa_dau_cau_tieng_viet(textPDF)
-        if re.search("cộng hòa xã hội chủ nghĩa việt nam", checkType):
-            typeDoc = "admin-doc"
-        else:
-            typeDoc = "book"
+    if (len(reader.pages) < 4):
+        typeDoc = "admin-doc"
     else:
-        ocrVal["body"] = readImg(0, inputPath)
-        checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
-        checkAdminDoc = re.search(
-            "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam|cọng hòa xã họi chủ nghĩa việt nam|cộng hòa xã họi chủ nghĩa việt nam",
-            checkType,
-        )
-        if checkAdminDoc:
-            typeDoc = "admin-doc"
+        textPDF = reader.pages[0].extract_text()
+        if len(textPDF) > 10:
+            ocrVal["body"] = textPDF
+            checkType = chuan_hoa_dau_cau_tieng_viet(textPDF)
+            if re.search("cộng hòa xã hội chủ nghĩa việt nam", checkType):
+                typeDoc = "admin-doc"
+            else:
+                typeDoc = "book"
         else:
-            typeDoc = "book"
+            ocrVal["body"] = readImg(0, inputPath)
+            checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
+            checkAdminDoc = re.search(
+                "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam|cọng hòa xã họi chủ nghĩa việt nam|cộng hòa xã họi chủ nghĩa việt nam",
+                checkType,
+            )
+            if checkAdminDoc:
+                typeDoc = "admin-doc"
+            else:
+                typeDoc = "book"
 
     if typeDoc == "book":
         if reader.pages[1].extract_text():
@@ -184,3 +191,9 @@ def OCRProcessor(companyId, userId, fileId):
         properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent),
     )
     producer_conn.close()
+
+
+def logRequest(companyId, userId, fileId):
+    current_time = datetime.now()
+    current_time_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    print(current_time_str + " - " + companyId + " - " + userId + " - " + fileId)
