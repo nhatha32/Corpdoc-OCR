@@ -15,7 +15,7 @@ from pathlib import Path
 
 #######################   VARIABLE   #############################
 
-from envLoader import (
+from src.envLoader import (
     asset_path,
     poppler_path,
 )
