@@ -80,7 +80,7 @@ def OCRProcessor(companyId, userId, fileId):
     ocrVal = {"body": ""}
     typeDoc = ""
 
-    if (len(reader.pages) < 4):
+    if len(reader.pages) < 4:
         typeDoc = "admin-doc"
     else:
         textPDF = reader.pages[0].extract_text()
@@ -122,7 +122,6 @@ def OCRProcessor(companyId, userId, fileId):
             textAdmin = textExtract
         else:
             textAdmin = readImg(0, inputPath)
-        print(textAdmin)
         if textAdmin:
             valInPage = postAdminDoc(textAdmin)
             if valInPage is not None:
@@ -132,7 +131,6 @@ def OCRProcessor(companyId, userId, fileId):
     # Text Analysis
 
     langchainInput = ""
-
     if typeDoc == "book":
         if "isbn" in ocrVal:
             response = requests.get(gg_api + "q=isbn:" + ocrVal["isbn"])
@@ -179,7 +177,6 @@ def OCRProcessor(companyId, userId, fileId):
             }
         }
     )
-
     # Send message to Langchain queue
     producer_conn = pika.BlockingConnection(params)
     producer_channel = producer_conn.channel()
