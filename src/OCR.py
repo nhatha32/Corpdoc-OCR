@@ -18,6 +18,7 @@ from datetime import datetime
 #######################   FUNCTION   #############################
 
 from src.chuanHoa import chuan_hoa_dau_cau_tieng_viet
+from src.chuanHoa import no_accent_vietnamese
 from src.adminDoc import postAdminDoc
 from src.book import postBook
 from src.readImg import readImg
