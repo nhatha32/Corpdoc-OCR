@@ -1,3 +1,5 @@
+import regex as re
+
 # Chuẩn hóa bảng mã tiếng việt
 
 bang_nguyen_am = [

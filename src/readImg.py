@@ -9,6 +9,7 @@ from pdf2image import convert_from_path
 import numpy as np
 import platform
 from pathlib import Path
+from wrapt_timeout_decorator import *
 
 ##################################################################
 ##################################################################
@@ -35,6 +36,7 @@ image_file_list = []
 
 
 # Đọc ảnh từ file PDF
+@timeout(300)
 def readImg(i, inputPath):
     PDF_file = Path(inputPath)
     with TemporaryDirectory() as tempdir:
