@@ -198,9 +198,9 @@ def OCRProcessor(companyId, userId, fileId):
                     "companyId": companyId,
                     "userId": userId,
                     "fileId": fileId,
-                    "type": typeDoc,
-                    "title": langchainInput,
-                    "ocr": ocrVal,
+                    "type": '',
+                    "title": '',
+                    "ocr": '',
                     "status": False,
                 }
             }
