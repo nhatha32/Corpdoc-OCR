@@ -125,7 +125,7 @@ def OCRProcessor(companyId, userId, fileId):
                         if i == 2:
                             ocrVal["body"] = textBook
             else:
-                ocrVal["body"] = readImg(enumerate(reader.pages)/2, inputPath)
+                ocrVal["body"] = readImg(len(reader.pages)/2, inputPath)
         else:
             textExtract = reader.pages[0].extract_text()
             if len(textExtract) > 10:
