@@ -116,7 +116,7 @@ def OCRProcessor(companyId, userId, fileId):
             if reader.pages[1].extract_text():
                 for i, page in enumerate(reader.pages):
                     textBook = page.extract_text()
-                    if len(textBook) > 700:
+                    if len(textBook) > 500:
                         valInPage = postBook(textBook)
                         if valInPage is not None:
                             ocrVal.update(valInPage)
@@ -124,7 +124,7 @@ def OCRProcessor(companyId, userId, fileId):
                         if i == 2:
                             ocrVal["body"] = textBook
             else:
-                ocrVal["body"] = readImg(3, inputPath)
+                ocrVal["body"] = readImg(enumerate(reader.pages)/2, inputPath)
         else:
             textExtract = reader.pages[0].extract_text()
             if len(textExtract) > 10:
@@ -174,6 +174,9 @@ def OCRProcessor(companyId, userId, fileId):
 
         os.remove(PDF_file)
 
+        if langchainInput == '':
+            langchainInput = ocrVal["body"]
+
         data_string = json.dumps(
             {
                 "data": {
@@ -187,9 +190,9 @@ def OCRProcessor(companyId, userId, fileId):
                 }
             }
         )
-        # print("ok")
+        print("success")
     except:
-        # print("finally")
+        print("error")
         os.remove(PDF_file)
 
         data_string = json.dumps(
