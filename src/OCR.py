@@ -73,7 +73,6 @@ def OCRProcessor(companyId, userId, fileId):
 
         #################################################
         ##### CHECKTYPE #################################
-
         reader = PdfReader(PDF_file)
         textFromOCR = ""
         textPDF = ""
@@ -115,6 +114,8 @@ def OCRProcessor(companyId, userId, fileId):
         if typeDoc == "book":
             if reader.pages[1].extract_text():
                 for i, page in enumerate(reader.pages):
+                    if i==0:
+                        continue
                     textBook = page.extract_text()
                     if len(textBook) > 500:
                         valInPage = postBook(textBook)
@@ -138,7 +139,6 @@ def OCRProcessor(companyId, userId, fileId):
                     ocrVal["body"] = textAdmin
 
         # Text Analysis
-
         langchainInput = ""
         if typeDoc == "book":
             if "isbn" in ocrVal:
@@ -191,24 +191,7 @@ def OCRProcessor(companyId, userId, fileId):
             }
         )
         print("success")
-    except:
-        print("error")
-        os.remove(PDF_file)
 
-        data_string = json.dumps(
-            {
-                "data": {
-                    "companyId": companyId,
-                    "userId": userId,
-                    "fileId": fileId,
-                    "type": '',
-                    "title": '',
-                    "ocr": '',
-                    "status": False,
-                }
-            }
-        )
-    finally:
         # Send message to Langchain queue
         producer_conn = pika.BlockingConnection(params)
         producer_channel = producer_conn.channel()
@@ -222,6 +205,59 @@ def OCRProcessor(companyId, userId, fileId):
         )
         producer_conn.close()
 
+    except:
+        print("error")
+        reader = PdfReader(PDF_file)
+        textPDF = ""
+        ocrVal = {"body": ""}
+        typeDoc = "book"
+        status = False
+        try:
+            if reader.pages[1].extract_text():
+                for i, page in enumerate(reader.pages):
+                    if i==0:
+                        continue
+                    textBook = page.extract_text()
+                    if len(textBook) > 500:
+                        valInPage = postBook(textBook)
+                        if valInPage is not None:
+                            ocrVal.update(valInPage)
+                            break
+                        if i == 2:
+                            ocrVal["body"] = textBook
+            else:
+                ocrVal["body"] = readImg(enumerate(reader.pages)/2, inputPath)
+            langchainInput = ocrVal["body"]
+            status = True
+        except:
+            typeDoc = ""
+
+        data_string = json.dumps(
+            {
+                "data": {
+                    "companyId": companyId,
+                    "userId": userId,
+                    "fileId": fileId,
+                    "type": typeDoc,
+                    "title": langchainInput,
+                    "ocr": ocrVal,
+                    "status": status,
+                }
+            }
+        )
+
+        # Send message to Langchain queue
+        producer_conn = pika.BlockingConnection(params)
+        producer_channel = producer_conn.channel()
+        producer_channel.queue_declare(queue=amqp_langchain_queue, durable=True)
+        producer_channel.basic_qos(prefetch_count=10)
+        producer_channel.basic_publish(
+            exchange="",
+            routing_key=amqp_langchain_queue,
+            body=data_string,
+            properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent),
+        )
+        producer_conn.close()
 
 def logRequest(companyId, userId, fileId):
     current_time = datetime.now()
