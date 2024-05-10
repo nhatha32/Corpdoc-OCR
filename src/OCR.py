@@ -226,7 +226,7 @@ def OCRProcessor(companyId, userId, fileId):
                         if i == 2:
                             ocrVal["body"] = textBook
             else:
-                ocrVal["body"] = readImg(enumerate(reader.pages)/2, inputPath)
+                ocrVal["body"] = readImg(len(reader.pages)/2, inputPath)
             langchainInput = ocrVal["body"]
             status = True
         except:
