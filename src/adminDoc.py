@@ -17,10 +17,11 @@ def postAdminDoc(raw_text):
 
     ######## GET title #################################
     lowerRawText = raw_text.lower()
-    print (lowerRawText)
+    noAccentText = no_accent_vietnamese(lowerRawText).lower()
+    # print (lowerRawText)
     regType = re.search(
-        "(bản ghi nhớ|bản thỏa thuận|chỉ thị|báo cáo|công điện|biên bản|chương trình|công thư|đơn|công văn|đề án|dự án|giấy giới thiệu|giấy mời|giấy nghỉ phép|giấy ủy quyền|hợp đồng|giấy đề nghị|công bố|hướng dẫn|điều lệ|giấy phép|kế hoạch|nghị quyết|phiếu báo|thỏa ước|giấy xác nhận|phiếu chuyển|phiếu gửi|phương án|quy chế|quy định|quyết định|thông báo|giấy biên nhận|giấy cam kết|thư|nội quy|bản cam kết|chứng chỉ|phiếu lấy ý kiến|tờ trình|tờ khai|v/v|v4y|v/w|v4v).*\n?",
-        lowerRawText,
+        "(ban ghi nho|ban thoa thuan|chi thi|bao cao|cong dien|bien ban|chuong trinh|cong thu|don|cong van|de an|du an|giay gioi thieu|giay moi|giay nghi phep|giay uy quyen|hop dong|giay de nghi|cong bo|huong dan|dieu le|giay phep|ke hoach|nghi quyet|phieu bao|thoa uoc|giay xac nhan|phieu chuyen|phieu gui|phuong an|quy che|quy dinh|quyet dinh|thong bao|giay bien nhan|giay cam ket|thu|noi quy|ban cam ket|chung chi|phieu lay y kien|to trinh|to khai|v/v|v4y|v/w|v4v).*\n?",
+        noAccentText,
     )
 
     reg = re.search("(căn cứ|kính|tại)", lowerRawText)
