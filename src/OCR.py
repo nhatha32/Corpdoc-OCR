@@ -238,7 +238,6 @@ def OCRProcessor(companyId, userId, fileId):
             status = True
         except:
             typeDoc = ""
-        print(data_string)
 
         data_string = json.dumps(
             {
@@ -253,6 +252,7 @@ def OCRProcessor(companyId, userId, fileId):
                 }
             }
         )
+        print(data_string)
 
         # Send message to Langchain queue
         producer_conn = pika.BlockingConnection(params)

@@ -8,6 +8,7 @@ import regex as re
 #######################   FUNCTION   #############################
 
 from src.chuanHoa import chuan_hoa_dau_cau_tieng_viet
+from src.chuanHoa import no_accent_vietnamese
 
 ##################################################################
 ##################################################################
