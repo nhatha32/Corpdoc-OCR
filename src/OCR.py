@@ -97,7 +97,7 @@ def OCRProcessor(companyId, userId, fileId):
                 else:
                     typeDoc = "book"
             else:
-                ocrVal["body"] = readImg(0, filePath)
+                ocrVal["body"] = readImg(0, inputPath)
                 # checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
                 checkType = no_accent_vietnamese(ocrVal["body"]).lower()
                 # print(checkType1)
@@ -113,27 +113,28 @@ def OCRProcessor(companyId, userId, fileId):
 
         if typeDoc == "book":
             if reader.pages[len(list(reader.pages)) // 2].extract_text() or reader.pages[(len(list(reader.pages)) // 2) - 1].extract_text():
+                finalBody = ""
                 for i, page in enumerate(reader.pages):
-                    if i==0 or i==1:
+                    if i<2:
                         continue
                     textBook = page.extract_text()
-                    if len(textBook) > 700:
+                    if len(ocrVal["body"].split()) < 1000:
                         valInPage = postBook(textBook)
                         if valInPage is not None:
                             ocrVal.update(valInPage)
-                            break
-                        ocrVal["body"] = textBook
+                        finalBody += textBook
+                ocrVal["body"] = finalBody
             else:
                 if reader.pages[len(list(reader.pages)) // 2].extract_text():
-                    ocrVal["body"] = readImg(len(list(reader.pages)) // 2, filePath)
+                    ocrVal["body"] = readImg(len(list(reader.pages)) // 2, inputPath)
                 else:
-                    ocrVal["body"] = readImg((len(list(reader.pages)) // 2) - 1, filePath)
+                    ocrVal["body"] = readImg((len(list(reader.pages)) // 2) - 1, inputPath)
         else:
             textExtract = reader.pages[0].extract_text()
             if len(textExtract) > 10:
                 textAdmin = textExtract
             else:
-                textAdmin = readImg(0, filePath)
+                textAdmin = readImg(0, inputPath)
             if textAdmin:
                 valInPage = postAdminDoc(textAdmin)
                 if valInPage is not None:
@@ -193,6 +194,7 @@ def OCRProcessor(companyId, userId, fileId):
             }
         )
         print("success")
+        print(data_string)
 
         # Send message to Langchain queue
         producer_conn = pika.BlockingConnection(params)
@@ -216,25 +218,27 @@ def OCRProcessor(companyId, userId, fileId):
         status = False
         try:
             if reader.pages[len(list(reader.pages)) // 2].extract_text() or reader.pages[(len(list(reader.pages)) // 2) - 1].extract_text():
+                finalBody = ""
                 for i, page in enumerate(reader.pages):
-                    if i==0 or i==1:
+                    if i<2:
                         continue
                     textBook = page.extract_text()
-                    if len(textBook) > 700:
+                    if len(ocrVal["body"].split()) < 1000:
                         valInPage = postBook(textBook)
                         if valInPage is not None:
                             ocrVal.update(valInPage)
-                            break
-                        ocrVal["body"] = textBook
+                        finalBody += textBook
+                ocrVal["body"] = finalBody
             else:
                 if reader.pages[len(list(reader.pages)) // 2].extract_text():
-                    ocrVal["body"] = readImg(len(list(reader.pages)) // 2, filePath)
+                    ocrVal["body"] = readImg(len(list(reader.pages)) // 2, inputPath)
                 else:
-                    ocrVal["body"] = readImg((len(list(reader.pages)) // 2) - 1, filePath)
+                    ocrVal["body"] = readImg((len(list(reader.pages)) // 2) - 1, inputPath)
             langchainInput = ocrVal["body"]
             status = True
         except:
             typeDoc = ""
+        print(data_string)
 
         data_string = json.dumps(
             {
