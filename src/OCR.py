@@ -118,7 +118,7 @@ def OCRProcessor(companyId, userId, fileId):
                     if i<2:
                         continue
                     textBook = page.extract_text()
-                    if len(ocrVal["body"].split()) < 1000:
+                    if len(finalBody.split()) < 1000:
                         valInPage = postBook(textBook)
                         if valInPage is not None:
                             ocrVal.update(valInPage)
@@ -223,7 +223,7 @@ def OCRProcessor(companyId, userId, fileId):
                     if i<2:
                         continue
                     textBook = page.extract_text()
-                    if len(ocrVal["body"].split()) < 1000:
+                    if len(finalBody.split()) < 1000:
                         valInPage = postBook(textBook)
                         if valInPage is not None:
                             ocrVal.update(valInPage)
