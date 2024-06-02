@@ -19,18 +19,29 @@ def postAdminDoc(raw_text):
     ######## GET title #################################
     lowerRawText = raw_text.lower()
     noAccentText = no_accent_vietnamese(lowerRawText).lower()
-    # print (lowerRawText)
+    # print (noAccentText)
     regType = re.search(
-        "(ban ghi nho|ban thoa thuan|chi thi|bao cao|cong dien|bien ban|chuong trinh|cong thu|don|cong van|de an|du an|giay gioi thieu|giay moi|giay nghi phep|giay uy quyen|hop dong|giay de nghi|cong bo|huong dan|dieu le|giay phep|ke hoach|nghi quyet|phieu bao|thoa uoc|giay xac nhan|phieu chuyen|phieu gui|phuong an|quy che|quy dinh|quyet dinh|thong bao|giay bien nhan|giay cam ket|thu|noi quy|ban cam ket|chung chi|phieu lay y kien|to trinh|to khai|v/v|v4y|v/w|v4v).*\n?",
+        "cong hoa xa hoi chu nghia viet nam|hoa xa hoi chu nghia viet nam",
         noAccentText,
     )
+    titleRawContent = raw_text[regType.span()[0]:]
 
-    reg = re.search("(căn cứ|kính|tại)", lowerRawText)
+    titleRawNoAccent = no_accent_vietnamese(titleRawContent).lower()
+    titleRawLower = titleRawContent.lower()
+
+    regType = re.search(
+        "(nghi dinh|quy dinh|quyet dinh|chi thi|bao cao|cong dien|bien ban|giay gioi thieu|giay moi|giay nghi phep|giay uy quyen|phieu chuyen|phieu gui|phuong an|quy che|thong bao|giay bien nhan|giay cam ket|hop dong|cong van|ban ghi nho|ban thoa thuan|cong bo|de an|du an|chuong trinh|cong thu|giay de nghi|huong dan|dieu le|giay phep|ke hoach|nghi quyet|phieu bao|giay xac nhan|noi quy|ban cam ket|phieu lay y kien|to trinh|to khai|chung chi|thoa uoc|don|thu|giay dang ky|giay chung nhan|thong cao|v/v|v4y|v/w|v4v).*\n?",
+        titleRawNoAccent,
+    )
+
+    # print(regType)
+
+    reg = re.search("(căn cứ|kính|tại|trước)", titleRawLower)
 
     if regType and reg:
-        ocrValInPage["tieu_de"] = raw_text[regType.span()[0] : reg.span()[0]]
+        ocrValInPage["tieu_de"] = titleRawContent[regType.span()[0] : reg.span()[0]]
         ocrValInPage["tieu_de"] = ocrValInPage["tieu_de"].replace("\n", " ")
 
-    print(ocrValInPage)
+    # print(ocrValInPage)
 
     return ocrValInPage

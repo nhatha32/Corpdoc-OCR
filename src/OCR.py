@@ -87,7 +87,6 @@ def OCRProcessor(companyId, userId, fileId):
                 ocrVal["body"] = textPDF
                 # checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
                 checkType = no_accent_vietnamese(ocrVal["body"]).lower()
-                # print(checkType1)
                 checkAdminDoc = re.search(
                     "cong hoa xa hoi chu nghia viet nam|xa hoi chu nghia viet nam",
                     checkType,
@@ -100,7 +99,7 @@ def OCRProcessor(companyId, userId, fileId):
                 ocrVal["body"] = readImg(0, inputPath)
                 # checkType = chuan_hoa_dau_cau_tieng_viet(ocrVal["body"])
                 checkType = no_accent_vietnamese(ocrVal["body"]).lower()
-                # print(checkType1)
+                # print(checkType)
                 checkAdminDoc = re.search(
                     # "cộng hòa xã hội chủ nghĩa việt nam|cọng hòa xã hội chủ nghĩa việt nam|cọng hòa xã họi chủ nghĩa việt nam|cộng hòa xã họi chủ nghĩa việt nam",
                     "cong hoa xa hoi chu nghia viet nam|xa hoi chu nghia viet nam",
@@ -130,11 +129,7 @@ def OCRProcessor(companyId, userId, fileId):
                 else:
                     ocrVal["body"] = readImg((len(list(reader.pages)) // 2) - 1, inputPath)
         else:
-            textExtract = reader.pages[0].extract_text()
-            if len(textExtract) > 10:
-                textAdmin = textExtract
-            else:
-                textAdmin = readImg(0, inputPath)
+            textAdmin = readImg(0, inputPath)
             if textAdmin:
                 valInPage = postAdminDoc(textAdmin)
                 if valInPage is not None:
